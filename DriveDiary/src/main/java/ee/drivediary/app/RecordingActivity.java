@@ -1,18 +1,23 @@
 package ee.drivediary.app;
 
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.*;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
 import ee.drivediary.R;
-import ee.drivediary.cli.AsyncClient;
+import ee.drivediary.db.TrackDAO;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static java.util.Arrays.asList;
 
 
 public class RecordingActivity extends ActionBarActivity {
@@ -23,7 +28,6 @@ public class RecordingActivity extends ActionBarActivity {
     EditText trackDistance;
     EditText trackTime;
     TimeCounter elapsedTimeCounter;
-    AsyncClient serverCli = new AsyncClient();
 
     // Acquire a reference to the system Location Manager
     LocManager locationManager;
@@ -31,6 +35,9 @@ public class RecordingActivity extends ActionBarActivity {
     private ArrayAdapter<TrackRecord> adapter;
     private List<TrackRecord> records = new ArrayList<>(10);
     private AtomicReference<TrackRecord> currentRecord = new AtomicReference<>();
+
+    // Local Databas Storage Facilities
+    private TrackDAO trackDAO;
 
 
     public void toggleRecording( View view ){
@@ -49,7 +56,7 @@ public class RecordingActivity extends ActionBarActivity {
             records.add(lastReading);
             adapter.notifyDataSetChanged();
             Log.i(TAG, "New record added :" + lastReading);
-            serverCli.tryToSendData( lastReading );
+            trackDAO.insert( lastReading );
         }
         recButton.setText( getResources().getText(R.string.start_recording));
 
@@ -59,7 +66,10 @@ public class RecordingActivity extends ActionBarActivity {
     private void startRecording(Button recButton) {
         locationManager.start();
         elapsedTimeCounter.start();
+
         recButton.setText(getResources().getText(R.string.stop_recording));
+        trackTime.setText("0");
+        trackDistance.setText("0");
 
         started=true;
     }
@@ -71,12 +81,35 @@ public class RecordingActivity extends ActionBarActivity {
         trackDistance = (EditText) this.findViewById(R.id.trackDistance);
         trackTime = (EditText) this.findViewById(R.id.trackTime);
 
+        trackDAO = new TrackDAO(this);
+
+        restoreStateBetweenRotations(savedInstanceState);
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, records );
         ((ListView)this.findViewById(R.id.listRecords)).setAdapter(adapter);
 
         locationManager = new LocManager( this );
         elapsedTimeCounter = new TimeCounter(this);
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        persistStateBetweenRotations(outState);
+    }
+
+    private static final String KEY_SAVED_LIST = "SAVED_LIST";
+    private void persistStateBetweenRotations(Bundle outState){
+        outState.putParcelableArray( KEY_SAVED_LIST, records.toArray( new TrackRecord[0]));
+    }
+    private void restoreStateBetweenRotations(Bundle state){
+        if(state!=null){
+            TrackRecord[] arr =(TrackRecord[]) state.getParcelableArray(KEY_SAVED_LIST);
+            if(arr != null)
+                records = asList( arr );
+
+        }
+    }
+
 
 
     @Override

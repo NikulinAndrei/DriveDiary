@@ -12,7 +12,7 @@ import java.util.Date;
  * User: AndreiN
  * Date: 17.11.2014
  */
-public class LocListener implements LocationListener {
+class LocListener implements LocationListener {
   public static final String TAG="LocListener";
 
   private RecordingActivity recordingActivity;

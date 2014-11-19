@@ -5,6 +5,7 @@ import android.util.Log;
 import ee.drivediary.common.TrackRecord;
 import org.springframework.http.*;
 import org.springframework.http.converter.json.GsonHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
@@ -34,13 +35,14 @@ import java.net.URISyntaxException;
     HttpEntity<TrackRecord> requestEntity = new HttpEntity<>(payload, requestHeaders);
 
     //restTemplate.getMessageConverters().add( new GsonHttpMessageConverter() );
+    restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
 
   // Make the HTTP POST request, marshaling the request to JSON, and the response to a String
-    ResponseEntity<String> response = restTemplate.exchange(
-          "http://10.0.3.2:8080/track/saveNewRecord",
+    ResponseEntity<Void> response = restTemplate.exchange(
+          "http://10.0.3.2:8088/track/saveNewRecord",
           HttpMethod.POST,
           requestEntity,
-          String.class);
+          Void.class);
 
     return true;
   }

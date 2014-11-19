@@ -10,7 +10,7 @@ import java.util.TimerTask;
  * User: AndreiN
  * Date: 17.11.2014
  */
-public class TimeCounter{
+class TimeCounter{
 
   private Timer timer;
   private RecordingActivity recordingActivity;

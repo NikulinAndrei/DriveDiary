@@ -22,6 +22,7 @@ public class TrackRecord {
     this.carNr = carNr;
   }
 
+
   public Date getStartedAt() {
     return startedAt;
   }

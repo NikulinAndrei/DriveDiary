@@ -1,5 +1,8 @@
 package ee.drivediary.app;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -8,7 +11,7 @@ import java.util.Date;
  * User: AndreiN
  * Date: 17.11.2014
  */
-public class TrackRecord {
+public class TrackRecord implements Parcelable {
   private final Date startTime;
   private final Date endTime;
   private final Double trackLength;
@@ -44,5 +47,36 @@ public class TrackRecord {
     return new SimpleDateFormat("dd.MM.yyyy HH:mm").format(startTime)
         +" / "  + getTrackTime() + " s / "
         + getTrackLengthInKm() +" km"  ;
+  }
+
+  @Override
+  public int describeContents() {
+    return 0;
+  }
+
+  @Override
+  public void writeToParcel(Parcel dest, int flags) {
+    dest.writeLong( startTime.getTime());
+    dest.writeLong( endTime.getTime());
+    dest.writeDouble(trackLength);
+  }
+
+  public static final Parcelable.Creator<TrackRecord> CREATOR
+      = new Parcelable.Creator<TrackRecord>() {
+    public TrackRecord createFromParcel(Parcel in) {
+      return new TrackRecord(in);
+    }
+
+    public TrackRecord[] newArray(int size) {
+      return new TrackRecord[size];
+    }
+  };
+
+  private TrackRecord(Parcel parcel) {
+    this(
+        new Date(parcel.readLong()),
+        new Date(parcel.readLong()),
+        parcel.readDouble()
+    );
   }
 }

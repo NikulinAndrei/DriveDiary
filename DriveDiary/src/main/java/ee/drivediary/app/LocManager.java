@@ -9,7 +9,7 @@ import android.location.LocationManager;
  * User: AndreiN
  * Date: 18.11.2014
  */
-public class LocManager {
+class LocManager {
 
   private LocationManager locationManager;
   private LocationListener locationListener ;

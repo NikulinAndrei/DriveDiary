@@ -18,7 +18,7 @@ class LocListener implements LocationListener {
   private RecordingActivity recordingActivity;
   private final Date startDate = new Date();
   private Location previousLocation = null;
-  private Double calculatedLength = 0D;
+  private double calculatedLength = 0D;
 
   public LocListener(RecordingActivity recordingActivity) {
     this.recordingActivity = recordingActivity;
@@ -29,10 +29,7 @@ class LocListener implements LocationListener {
     Log.d(TAG, location.toString());
     if(previousLocation != null) {
       calculatedLength += (double) location.distanceTo(previousLocation);
-      recordingActivity.updateRecord(
-          new TrackRecord(startDate,
-              new Date(location.getTime()),
-              calculatedLength));
+      recordingActivity.updateRecord( new TrackInfoUpdate(calculatedLength));
     }
     previousLocation = location;
   }

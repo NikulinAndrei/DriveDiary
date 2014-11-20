@@ -14,8 +14,8 @@ import ee.drivediary.R;
 import ee.drivediary.db.TrackDAO;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Arrays.asList;
 
@@ -34,7 +34,9 @@ public class RecordingActivity extends ActionBarActivity {
 
     private ArrayAdapter<TrackRecord> adapter;
     private List<TrackRecord> records = new ArrayList<>(10);
-    private AtomicReference<TrackRecord> currentRecord = new AtomicReference<>();
+
+    TrackInfoUpdate currentTrackInfo = null;
+    Date currentStartTime = null;
 
     // Local Databas Storage Facilities
     private TrackDAO trackDAO;
@@ -51,27 +53,36 @@ public class RecordingActivity extends ActionBarActivity {
     private void stopRecording(Button recButton) {
         locationManager.stop();
         elapsedTimeCounter.stop();
-        TrackRecord lastReading = currentRecord.getAndSet(null);
-        if(lastReading != null) {
-            records.add(lastReading);
-            adapter.notifyDataSetChanged();
-            Log.i(TAG, "New record added :" + lastReading);
-            trackDAO.insert( lastReading );
-        }
-        recButton.setText( getResources().getText(R.string.start_recording));
+        persistReading();
 
+        recButton.setText( getResources().getText(R.string.start_recording));
         started=false;
     }
 
     private void startRecording(Button recButton) {
+        recButton.setText(getResources().getText(R.string.stop_recording));
+        resetReadings();
+
         locationManager.start();
         elapsedTimeCounter.start();
+        started=true;
+    }
 
-        recButton.setText(getResources().getText(R.string.stop_recording));
+    private void resetReadings() {
         trackTime.setText("0");
         trackDistance.setText("0");
+        currentStartTime = new Date();
+        currentTrackInfo = null;
+    }
 
-        started=true;
+    private void persistReading() {
+        if(currentTrackInfo == null) return;
+
+        TrackRecord newRecord = new TrackRecord( currentStartTime, new Date(), currentTrackInfo.getDistance() );
+        records.add(newRecord);
+        adapter.notifyDataSetChanged();
+        Log.i(TAG, "New record added :" + newRecord);
+        trackDAO.insert( newRecord );
     }
 
     @Override
@@ -79,7 +90,9 @@ public class RecordingActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recording);
         trackDistance = (EditText) this.findViewById(R.id.trackDistance);
+        trackDistance.setEnabled(false);
         trackTime = (EditText) this.findViewById(R.id.trackTime);
+        trackTime.setEnabled(false);
 
         trackDAO = new TrackDAO(this);
 
@@ -134,12 +147,12 @@ public class RecordingActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void updateRecord(final TrackRecord record) {
+    public void updateRecord(final TrackInfoUpdate info) {
         this.runOnUiThread(
             new Runnable() {
                 @Override public void run() {
-                    currentRecord.set( record );
-                    trackDistance.setText( String.valueOf(record.getTrackLength().longValue()));
+                    currentTrackInfo = info;
+                    trackDistance.setText( String.valueOf( (long)info.getDistance() ));
                 }
             }
         );

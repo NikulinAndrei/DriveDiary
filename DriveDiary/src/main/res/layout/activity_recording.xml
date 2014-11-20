@@ -18,7 +18,7 @@
                 android:singleLine="true" android:onClick="toggleRecording" android:nestedScrollingEnabled="false"/>
     <GridLayout
             android:layout_width="match_parent"
-            android:layout_height="308dp" android:rowCount="4">
+            android:layout_height="103dp" android:rowCount="4">
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -31,7 +31,7 @@
                 android:inputType="number"
                 android:ems="10"
                 android:id="@+id/trackDistance" android:layout_gravity="center_horizontal" android:layout_row="0"
-                android:layout_column="1"/>
+                android:layout_column="1" android:editable="false" android:enabled="false"/>
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
